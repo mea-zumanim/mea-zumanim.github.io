@@ -356,7 +356,7 @@ html[data-view="phone"] .pad { padding-inline: 12px; }
   <div class="viewbar" id="viewBar" hidden><span id="viewText"></span><button class="btn" id="viewBack">חזרה לנתונים שלי</button></div>
   <main>
     <section class="panel" id="p-main">
-      <div class="loading" id="loading"><b>ברוכים הבאים ל"מאה-זומנים"</b><span>טוען את הנתונים שלך…</span></div>
+      <div class="loading" id="loading"><b>ברוכים הבאים ל"מְזֻמָּנַי"</b><span>טוען את הנתונים שלך…</span></div>
       <div class="todaybar" id="todaybar" hidden></div>
       <div class="sheetwrap" id="sheetwrap" hidden>
         <div class="scroller" id="scroller">
@@ -1856,7 +1856,7 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
   }
   async function exportJson() {
     var data = JSON.stringify({ app: 'mea-zmanim', v: 1, exported: new Date().toISOString(), meta: metaDoc(), blocks: allBlocks().map(blockDoc) });
-    var name = 'מאה-זומנים-גיבוי-' + new Date().toISOString().slice(0, 10) + '.json';
+    var name = 'מזומני-גיבוי-' + new Date().toISOString().slice(0, 10) + '.json';
     if (!E.isTauri()) {
       var dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null;
       if (!dl) {
@@ -1915,7 +1915,7 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
       if (!f) return;
       f.text().then(function (t) {
         var j = JSON.parse(t);
-        if (!j || j.app !== 'mea-zmanim') throw new Error('זה לא קובץ גיבוי של מאה-זומנים');
+        if (!j || j.app !== 'mea-zmanim') throw new Error('זה לא קובץ גיבוי של מְזֻמָּנַי');
         confirmBox('שחזור מגיבוי', 'הנתונים הקיימים יוחלפו בגיבוי מתאריך ' + String(j.exported || '').slice(0, 10) + '.\nלהמשיך?', 'שחזור', function () {
           replaceState(stateFromParts(j.meta, j.blocks || []), 'הגיבוי שוחזר בהצלחה.');
         });
@@ -2006,19 +2006,19 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
   async function boot() {
     if (!E.isTauri()) {
       try { await E.webLoad(); }
-      catch (e) { console.error(e); $('loading').innerHTML = '<b>מאה-זומנים</b><span>טעינת המנוע נכשלה: ' + esc(e && e.message || e) + '</span>'; return; }
+      catch (e) { console.error(e); $('loading').innerHTML = '<b>מְזֻמָּנַי</b><span>טעינת המנוע נכשלה: ' + esc(e && e.message || e) + '</span>'; return; }
     }
     await initStore();
     var s = null;
     try { s = await loadState(); }
     catch (e) {
       console.error(e); setStatus('error', 'טעינת הנתונים נכשלה');
-      if (store.mode === 'tauri') { $('loading').innerHTML = '<b>מאה-זומנים</b><span>טעינת הנתונים נכשלה: ' + esc(e && e.message || e) + '</span>'; return; }
+      if (store.mode === 'tauri') { $('loading').innerHTML = '<b>מְזֻמָּנַי</b><span>טעינת הנתונים נכשלה: ' + esc(e && e.message || e) + '</span>'; return; }
     }
     var fresh = !s;
     if (!s) s = E.emptyState();
     try { await E.setState(s); }
-    catch (e) { console.error(e); $('loading').innerHTML = '<b>מאה-זומנים</b><span>טעינת המנוע נכשלה: ' + esc(e && e.message || e) + '</span>'; return; }
+    catch (e) { console.error(e); $('loading').innerHTML = '<b>מְזֻמָּנַי</b><span>טעינת המנוע נכשלה: ' + esc(e && e.message || e) + '</span>'; return; }
     if (fresh) await E.initSys(new Date());
     var bootFixed = 0, flagNew = !fresh && !s.sys.repairedV1;
     if (flagNew) { bootFixed = await E.RepairWeeklyShimur(); s.sys.repairedV1 = true; }
@@ -2054,7 +2054,7 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
 
 <div id="licGate" style="position:fixed;inset:0;background:#f3f0e9;z-index:2147483000;display:none;align-items:center;justify-content:center;font-family:system-ui,'Segoe UI',sans-serif;direction:rtl;">
   <div style="background:#fff;max-width:420px;width:90%;padding:28px 26px;border-radius:14px;box-shadow:0 12px 44px rgba(0,0,0,.18);text-align:center;">
-    <div style="font-size:20px;font-weight:700;margin-bottom:6px;color:#2b2a24;">הפעלת מאה-זומנים</div>
+    <div style="font-size:20px;font-weight:700;margin-bottom:6px;color:#2b2a24;">הפעלת מְזֻמָּנַי</div>
     <div id="licMsg" style="color:#777;font-size:14px;line-height:1.5;margin-bottom:18px;">התוכנה נעולה למחשב זה. התקשרו למוכר עם קוד הבקשה שלמטה כדי לקבל קוד הפעלה.</div>
     <div style="font-size:12px;color:#999;">קוד הבקשה שלך</div>
     <div id="licReq" style="font-size:22px;font-weight:700;letter-spacing:1px;margin:4px 0 18px;font-family:monospace;color:#1f6feb;">—</div>
