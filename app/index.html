@@ -279,7 +279,9 @@ html[data-view="tablet"] .grow > div { font-size: .84rem; }
 .phone-day { display: none; }
 html[data-view="phone"] .phone-day { display: flex; }
 html[data-view="phone"] #sheetwrap, html[data-view="phone"] #todaybar, html[data-view="phone"] #drawer { display: none !important; }
-html[data-view="phone"] .brand .sub { display: none; }
+html[data-view="phone"] .brand-text { flex-direction: row; align-items: center; gap: 8px; }
+html[data-view="phone"] .brand .sub { display: flex; font-size: .72rem; gap: 6px; white-space: nowrap; }
+html[data-view="phone"] .brand .sub::before { width: 14px; }
 html[data-view="phone"] .brand h1 { font-size: 1.3rem; }
 html[data-view="phone"] header.top { padding-block: 10px; }
 html[data-view="phone"] nav.tabs { position: fixed; bottom: 0; right: 0; left: 0; z-index: 50; background: var(--surface); border-top: 1px solid var(--line); display: flex; overflow: hidden; padding-bottom: env(safe-area-inset-bottom, 0px); }
