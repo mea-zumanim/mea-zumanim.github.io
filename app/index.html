@@ -46,6 +46,8 @@ html[data-view="phone"] .brand .logo { height: 34px; }
 .brand .sub { color: var(--muted); font-size: .85rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
 .brand .sub::before { content: ""; width: 22px; height: 2px; background: #c9982a; flex: none; }
 .status { margin-inline-start: auto; font-size: .82rem; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.acct { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--muted); }
+.acct .btn { padding: 4px 10px; font-size: .82rem; text-decoration: none; color: inherit; }
 .status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
 .status[data-s="saved"] .dot { background: var(--ok); }
 .status[data-s="saving"] .dot { background: var(--today-edge); }
@@ -331,6 +333,41 @@ html[data-view="phone"] table.t input.w-n { width: 100%; }
 html[data-view="phone"] .oz-ach { grid-template-columns: repeat(2, 1fr) !important; }
 html[data-view="phone"] .oz-grid { grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)) !important; }
 html[data-view="phone"] .pad { padding-inline: 12px; }
+/* מסלולים ומסגרות */
+.trtabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.trtabs button { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; font-weight: 700; font-size: .9rem; cursor: pointer; }
+.trtabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.trdot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.weekok { color: #1d6b45; border-color: #1d6b45; font-weight: 700; }
+.weekok-at { color: var(--muted); font-size: .8rem; }
+.mbox.ro .mval { position: static; flex-direction: column; gap: 2px; }
+.mbox.ro small { color: var(--muted); font-weight: 600; }
+.mbox.ro .alls { align-items: center; }
+.mbox.ro .al { font-size: .95rem; white-space: nowrap; }
+.grow > div.mk { cursor: pointer; }
+.grow > div.mk:hover { background: color-mix(in srgb, var(--accent-soft) 60%, transparent); }
+.grow > div.mk-red, .al.mk-red, .pd-row .v.mk-red { background: #fde2e2; color: #a3292a; }
+.grow > div.mk-org, .al.mk-org, .pd-row .v.mk-org { background: #ffe7c7; color: #8a4b00; }
+.mk-l { font-size: .72rem; font-weight: 700; }
+.alls { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; width: 100%; overflow: hidden; }
+.al { display: flex; align-items: flex-start; gap: 4px; font-size: .78rem; line-height: 1.25; border-radius: 4px; padding: 0 3px; max-width: 100%; overflow: hidden; }
+.al .trdot { margin-top: 4px; }
+.grow > div.allc { justify-content: flex-start; }
+.pk { display: flex; flex-wrap: wrap; gap: 8px; }
+.pkb { min-height: 44px; min-width: 150px; display: inline-flex; align-items: center; gap: 8px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; }
+.pkb.miss { background: #fde2e2; color: #a3292a; border-color: #a3292a; }
+.pk-n { color: var(--muted); font-size: .85rem; margin: 8px 0 0; }
+.pk-bg { position: fixed; inset: 0; background: rgba(10, 18, 28, .45); z-index: 60; }
+.pk-sheet { position: fixed; inset-inline: 0; bottom: 0; z-index: 61; border-radius: 18px 18px 0 0; max-height: 70vh; padding-bottom: 22px; }
+.pk-sheet .pkb { flex: 1 1 100%; justify-content: space-between; }
+.pd-tr { background: var(--surface-2); border-bottom: 1px solid var(--line); padding: 8px 12px; }
+.pd-tr .trtabs button { min-height: 40px; }
+.pd-row .v.mk { cursor: pointer; border-radius: 6px; padding: 4px 6px; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.pd-wk { min-height: 46px; width: 100%; }
+.trrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.trrow small { color: var(--muted); }
+.trrow .sp { flex: 1; }
+.trh { display: flex; align-items: center; gap: 8px; margin: 18px 0 8px; font-size: 1rem; }
 </style>
 
 <div id="app">
@@ -382,6 +419,7 @@ html[data-view="phone"] .pad { padding-inline: 12px; }
 </div>
 <input type="file" id="fileXlsm" accept=".xlsx,.xlsm,.csv,.pdf" hidden>
 <input type="file" id="fileJson" accept=".json,application/json" hidden>
+<input type="file" id="fileFrame" accept=".xlsx,.csv" hidden>
 <div id="modalRoot"></div>
 
 <script>
@@ -400,7 +438,7 @@ var ENGINE = (function () {
   var WEB = (function () {
     var x = null, loading = null, enc = new TextEncoder(), dec = new TextDecoder();
     function load() {
-      if (window.MZ_ENGINE_OVERRIDE) return Promise.resolve(null);
+      if (window.MZ_ENGINE_OVERRIDE || window.MZ_CLOUD) return Promise.resolve(null);
       if (loading) return loading;
       loading = fetch('engine.wasm')
         .then(function (r) { if (!r.ok) throw new Error('קובץ המנוע לא נמצא (' + r.status + ')'); return r.arrayBuffer(); })
@@ -410,8 +448,28 @@ var ENGINE = (function () {
       return loading;
     }
     function put(s) { var b = enc.encode(s), p = x.mz_alloc(b.length); new Uint8Array(x.memory.buffer, p, b.length).set(b); return [p, b.length]; }
+    // גרסת הענן: המנוע רץ בשרת, לכל משתמש בנפרד
+    function cloudCall(cmd, args, retried) {
+      return fetch('/api/engine', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-MZ': '1' }, body: JSON.stringify({ cmd: cmd, args: args || {} }) })
+        .then(function (r) {
+          if (r.status === 401) { location.href = '/login'; throw new Error('נדרשת כניסה מחדש'); }
+          if (!r.ok) throw new Error('השרת לא זמין (' + r.status + ')');
+          return r.json();
+        })
+        .then(function (out) {
+          if (out && 'err' in out) {
+            // השרת החליף מופע: טוענים מחדש את הנתונים הנוכחיים ומנסים שוב פעם אחת
+            if (!retried && cmd !== 'eng_load' && out.err === 'המנוע לא נטען' && S) {
+              return cloudCall('eng_load', { state: JSON.stringify(S) }, true).then(function () { return cloudCall(cmd, args, true); });
+            }
+            throw new Error(out.err);
+          }
+          return out.ok;
+        });
+    }
     function call(cmd, args) {
       if (window.MZ_ENGINE_OVERRIDE) return window.MZ_ENGINE_OVERRIDE(cmd, args || {});
+      if (window.MZ_CLOUD) return cloudCall(cmd, args);
       return load().then(function () {
         var c = put(cmd), a = put(JSON.stringify(args || {}));
         var n = x.mz_call(c[0], c[1], a[0], a[1]);
@@ -554,6 +612,28 @@ var ENGINE = (function () {
       });
     }).catch(function (e) { console.error(e); return false; });
   }
+  // ערך תא ממצב אחר (מסלול שלא טעון במנוע). pj = {live, proj}
+  function getIn(st, pj, r, c) {
+    if (c === 4 || c === 5 || c === 6) {
+      if (!inRange(r)) return '';
+      var w = weekday(r), k = -1;
+      if (r === 3) { if (c === 4) k = 0; }
+      else if (c === 4 && w <= 3) k = w;
+      else if (c === 5 && w === 4) k = 4;
+      else if (c === 6 && w <= 4) k = 7 + w;
+      if (k < 0 || r - k < 1) return '';
+      var vc = st.cells.C[r - k]; return vc == null ? '' : vc;
+    }
+    if ((c === 10 || c === 17) && pj && pj.live && r >= pj.live) { var pv0 = pj.proj[r]; return pv0 ? (c === 10 ? pv0[0] : pv0[1]) : ''; }
+    if (c === 1) return inRange(r) ? rowDate(r) : '';
+    if (c === 15) return oText(r);
+    if (c === 18) return rKey(r);
+    var col0 = COLS[c];
+    if (!col0 || !st.cells[col0]) return '';
+    var v0 = st.cells[col0][r];
+    return v0 == null ? '' : v0;
+  }
+  function resetProj() { liveStart = 0; proj = {}; }
   function get(r, c) {
     if (c === 4 || c === 5 || c === 6) return formulaDEF(r, c);
     if ((c === 10 || c === 17) && liveStart && r >= liveStart) { var pv = proj[r]; return pv ? (c === 10 ? pv[0] : pv[1]) : ''; }
@@ -602,11 +682,24 @@ var ENGINE = (function () {
   function RepairWeeklyShimur() { return op('eng_repair_weekly'); }
   function RebuildMonthly() { return op('eng_refreeze', { from: FIRST_ROW }); }
   function rowsOut(rows) { return (rows || []).map(function (row) { return (row || []).map(function (v) { return v == null ? '' : String(v); }); }); }
-  function BuildOtzarMy(today) {
+  function BuildOtzarMy(today, extra) {
     return serial(function () {
-      return inv('eng_otzar', { todayRow: rowOfDate(today || new Date()), nosaf: rowsOut(S.nosaf), chovot: rowsOut(S.chovot) });
+      return inv('eng_otzar', { todayRow: rowOfDate(today || new Date()), nosaf: rowsOut(S.nosaf), chovot: rowsOut(S.chovot.concat(extra || [])) });
     });
   }
+  // הרצה על מצב אחר (מסלול לא פעיל) והחזרת המצב הפעיל — הכל ברצף אחד בתור של המנוע
+  function loadInto(s, out) { var j = JSON.parse(out); s.cells = j.cells; s.nosaf = j.nosaf || []; s.chovot = j.chovot || []; delete s.nosafN; }
+  function withState(s, fn) {
+    return serial(function () {
+      var back = S, res;
+      return inv('eng_load', { state: JSON.stringify(s) }).then(function (out) { loadInto(s, out); return fn(s); })
+        .then(function (r) { res = r; }, function (e) { res = e; })
+        .then(function () { return inv('eng_load', { state: JSON.stringify(back) }); })
+        .then(function (out) { loadInto(back, out); if (res instanceof Error) throw res; return res; });
+    });
+  }
+  function monthlyFor(s, from, to) { return withState(s, function () { return inv('eng_main_gate', { todayRow: rowOfDate(new Date()) }).then(function () { return inv('eng_monthly', { from: from, to: to }); }); }); }
+  function otzarFor(s, today, extra) { return withState(s, function (st) { return inv('eng_otzar', { todayRow: rowOfDate(today || new Date()), nosaf: rowsOut(st.nosaf), chovot: rowsOut(st.chovot.concat(extra || [])) }); }); }
 
   return {
     isTauri: isTauri, webLoad: WEB.load,
@@ -616,7 +709,8 @@ var ENGINE = (function () {
     get: get, onChange: onChange, MainGate: MainGate, RunNormalizeAll: RunNormalizeAll, BuildOtzarMy: BuildOtzarMy,
     takeMsgs: takeMsgs, takeDirty: takeDirty, rowOfDate: rowOfDate, rowDate: rowDate, weekday: weekday,
     bText: bText, rKey: rKey, oText: oText, hebParts: hebParts, inRange: inRange, fmtDate: fmtDate,
-    RepairWeeklyShimur: RepairWeeklyShimur, RebuildMonthly: RebuildMonthly, OT_LIST: OT_LIST, NumberToHebrew: NumberToHebrew, ensureProj: ensureProj
+    RepairWeeklyShimur: RepairWeeklyShimur, RebuildMonthly: RebuildMonthly, OT_LIST: OT_LIST, NumberToHebrew: NumberToHebrew, ensureProj: ensureProj,
+    getIn: getIn, resetProj: resetProj, monthlyFor: monthlyFor, otzarFor: otzarFor
   };
 })();
 
@@ -1020,6 +1114,137 @@ var IMPORTER = (function () {
   return { readXlsx: readXlsx, readCsv: readCsv, readPdf: readPdf, parse: parseAny, parseDaf: parseDaf, parseHespek: parseHespek, typeOf: typeOf, TYPES: TYPES, asDate: asDate, hebDate: hebDate, findMasechet: findMasechet, resolveYears: resolveYears };
 })();
 if (typeof module !== 'undefined') module.exports = IMPORTER;
+// ===== מסגרת: לוח שבועי של כולל (קובץ אקסל) → תאים יומיים =====
+// מבנה הקובץ: שורה לכל שבוע. עמודות (לפי כותרת): מתאריך, עד תאריך, מסכת, דף חדש, חזרה חודשית, חזרה רבעונית (פרשה ושבוע — לא חובה).
+// דף חדש → עמודה C בשורת יום ראשון. חזרות → K / L, תא לכל יום, הטווח מחולק על ראשון–חמישי לאורך כל שבועות החזרה
+// (שורה ריקה אחרי חזרה = המשך אותה חזרה). מדלגים רק על תשעה באב.
+var FRAME = (function () {
+  var E = ENGINE;
+  var HEAD = {
+    from: /^מתאריך|^מ\s*תאריך|^תאריך\s*התחלה/, to: /^עד\s*תאריך/, mas: /^מסכת/, daf: /^דף\s*חדש/,
+    mon: /^חזרה\s*חודשית/, qtr: /^חזרה\s*רבעונית/, par: /^פרשה/, wk: /^שבוע/
+  };
+  function txt(c) { return c ? String(c.v == null ? '' : c.v).trim() : ''; }
+  function punct(n) { var r = E.NumberToHebrew(n); return r.length === 1 ? r + "'" : r.slice(0, -1) + '"' + r.slice(-1); }
+  function dafNum(t) {
+    t = String(t || '').replace(/[״׳"'`.:\s]/g, '').replace(/^דף/, '');
+    if (!t) return 0;
+    if (/^\d+$/.test(t)) return +t;
+    var L = { 'א': 1, 'ב': 2, 'ג': 3, 'ד': 4, 'ה': 5, 'ו': 6, 'ז': 7, 'ח': 8, 'ט': 9, 'י': 10, 'כ': 20, 'ך': 20, 'ל': 30, 'מ': 40, 'ם': 40, 'נ': 50, 'ן': 50, 'ס': 60, 'ע': 70, 'פ': 80, 'ף': 80, 'צ': 90, 'ץ': 90, 'ק': 100 };
+    var n = 0;
+    for (var i = 0; i < t.length; i++) { if (!L[t[i]]) return 0; n += L[t[i]]; }
+    return n >= 2 && n <= 200 ? n : 0;
+  }
+  // "ל–לג (4 דפים)", "מג-נו,ב-ד", "כל פרק ראשון" → [דפים] או null
+  function parseRange(v) {
+    var s = String(v || '').replace(/\([^)]*\)/g, ' ').replace(/[–—]/g, '-').trim();
+    if (!s) return [];
+    var out = [], ok = true;
+    s.split(/[,،]|\s+ו(?=[א-ת])/).forEach(function (part) {
+      part = part.trim(); if (!part) return;
+      var m = part.split(/\s*-\s*|\s+עד\s+/);
+      var a = dafNum(m[0]), b = m.length > 1 ? dafNum(m[m.length - 1]) : a;
+      if (!a || !b) { ok = false; return; }
+      if (b < a) { var x = a; a = b; b = x; }
+      for (var d = a; d <= b; d++) out.push(d);
+    });
+    return ok && out.length ? out : null;
+  }
+  function rowOf(cell) {
+    var d = IMPORTER.asDate({ v: txt(cell), isNum: cell && cell.isNum });
+    return d ? E.rowOfDate(new Date(d.y, d.m - 1, d.d)) : 0;
+  }
+  function isTishaBav(r) {
+    var h = E.hebParts(r), wd = E.weekday(r);
+    if (h.m !== 'אב') return false;
+    if (h.d === 9 && wd !== 6) return true;
+    return h.d === 10 && wd === 0; // נדחה
+  }
+  // קריאת הטבלה: {weeks:[{line, from, to, sun, mas, daf, mon:[..]|null, qtr, monTxt, qtrTxt, par}], errors:[]}
+  function read(rows) {
+    var lines = Object.keys(rows).map(Number).sort(function (a, b) { return a - b; });
+    var hr = -1, col = {};
+    for (var i = 0; i < lines.length && hr < 0; i++) {
+      var row = rows[lines[i]], found = {};
+      Object.keys(row).forEach(function (c) {
+        var t = txt(row[c]);
+        Object.keys(HEAD).forEach(function (k) { if (!found[k] && HEAD[k].test(t)) found[k] = c; });
+      });
+      if (found.from && found.daf) { hr = i; col = found; }
+    }
+    if (hr < 0) throw new Error('לא נמצאה שורת כותרות. צריך לפחות: "מתאריך" ו"דף חדש" (ואם יש חזרות: "חזרה חודשית", "חזרה רבעונית").');
+    var weeks = [], errors = [], mas = '';
+    for (var j = hr + 1; j < lines.length; j++) {
+      var rw = rows[lines[j]], from = rowOf(rw[col.from]);
+      if (!from) { if (txt(rw[col.from])) errors.push({ line: lines[j], t: 'תאריך לא מזוהה: ' + txt(rw[col.from]) }); continue; }
+      var to = col.to ? rowOf(rw[col.to]) : 0;
+      if (!to || to < from) to = from - E.weekday(from) + 4;
+      var m = col.mas ? txt(rw[col.mas]) : '';
+      if (m) { var mk = IMPORTER.findMasechet(m); if (!mk) errors.push({ line: lines[j], t: 'מסכת לא מזוהה: ' + m }); else mas = mk; }
+      var w = { line: lines[j], from: from, to: to, sun: from - E.weekday(from), mas: mas, par: col.par ? txt(rw[col.par]) : '',
+        daf: dafNum(txt(rw[col.daf])), monTxt: col.mon ? txt(rw[col.mon]) : '', qtrTxt: col.qtr ? txt(rw[col.qtr]) : '' };
+      if (txt(rw[col.daf]) && !w.daf) errors.push({ line: lines[j], t: 'דף לא מזוהה: ' + txt(rw[col.daf]) });
+      w.mon = parseRange(w.monTxt); w.qtr = parseRange(w.qtrTxt);
+      if (w.mon === null) errors.push({ line: lines[j], t: 'חזרה חודשית לא מזוהה: ' + w.monTxt });
+      if (w.qtr === null) errors.push({ line: lines[j], t: 'חזרה רבעונית לא מזוהה: ' + w.qtrTxt });
+      weeks.push(w);
+    }
+    if (!weeks.length) throw new Error('לא נמצאו שבועות בקובץ.');
+    if (!mas) errors.push({ line: 0, t: 'חסרה מסכת (עמודה "מסכת").' });
+    return { weeks: weeks, errors: errors };
+  }
+  function cellText(mas, dafs) {
+    if (!dafs.length) return '';
+    var parts = [], a = dafs[0], p = a;
+    for (var i = 1; i <= dafs.length; i++) {
+      var d = dafs[i];
+      if (d === p + 1) { p = d; continue; }
+      parts.push(a === p ? punct(a) : punct(a) + '-' + punct(p));
+      a = p = d;
+    }
+    return mas + ' ' + parts.join(', ');
+  }
+  // חלוקת דפים על ימים: פחות דפים מימים — דף ליום מההתחלה; יותר — שווה, היתרה לימים הראשונים
+  function spread(dafs, days) {
+    var out = days.map(function () { return []; }), n = dafs.length, k = days.length;
+    if (!k) return out;
+    var base = Math.floor(n / k), extra = n % k, i = 0;
+    if (n < k) { for (var j = 0; j < n; j++) out[j] = [dafs[j]]; return out; }
+    for (var d = 0; d < k; d++) { var c = base + (d < extra ? 1 : 0); out[d] = dafs.slice(i, i + c); i += c; }
+    return out;
+  }
+  // {שורה: {3|11|12: טקסט}} + {שורה:{c: [דפים]}} לתאים עם טווח
+  function expand(weeks) {
+    var cells = {}, dafs = {};
+    function put(r, c, mas, list) {
+      if (!list.length) return;
+      (cells[r] = cells[r] || {})[c] = cellText(mas, list);
+      (dafs[r] = dafs[r] || {})[c] = list.slice();
+    }
+    weeks.forEach(function (w) { if (w.daf) put(w.sun, 3, w.mas, [w.daf]); });
+    [['mon', 11], ['qtr', 12]].forEach(function (kc) {
+      var key = kc[0], c = kc[1];
+      for (var i = 0; i < weeks.length; i++) {
+        var w = weeks[i];
+        if (!w[key] || !w[key].length) continue;
+        var block = [w];
+        for (var j = i + 1; j < weeks.length; j++) {
+          var n = weeks[j];
+          if (n.daf || (n.mon && n.mon.length) || (n.qtr && n.qtr.length)) break;
+          block.push(n);
+        }
+        var days = [];
+        block.forEach(function (b) { for (var r = b.from; r <= b.to; r++) if (E.weekday(r) <= 4 && !isTishaBav(r)) days.push(r); });
+        var per = spread(w[key], days);
+        days.forEach(function (r, x) { put(r, c, w.mas, per[x]); });
+      }
+    });
+    return { cells: cells, dafs: dafs };
+  }
+  function lastRow(weeks) { return weeks.reduce(function (m, w) { return Math.max(m, w.to); }, 0); }
+  return { read: read, expand: expand, parseRange: parseRange, cellText: cellText, spread: spread, isTishaBav: isTishaBav, lastRow: lastRow, punct: punct };
+})();
+if (typeof module !== 'undefined') module.exports.FRAME = FRAME;
 // ===== מסך בדיקה ותיקון לפני ייבוא (אקסל / CSV / PDF) =====
 // deps: {E, showModal, setStatus, scheduleSave, refreshAll}
 function makeImportUI(deps) {
@@ -1283,6 +1508,13 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
   }
   async function initStore() {
     if (window.__TAURI__ && window.__TAURI__.core) { store.mode = 'tauri'; return; }
+    if (window.MZ_CLOUD) {
+      store.mode = 'cloud';
+      var rm = await fetch('/api/me', { credentials: 'same-origin' });
+      if (rm.status === 401) { location.href = '/login'; throw new Error('נדרשת כניסה'); }
+      try { store.me = await rm.json(); } catch (e) { store.me = null; }
+      return;
+    }
     var c = await waitClaude(1500);
     if (c) {
       try {
@@ -1336,23 +1568,38 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
       if (!meta && blocks.length === 0) return null;
       return stateFromParts(meta, blocks);
     }
+    if (store.mode === 'cloud') {
+      // שגיאה כאן עוצרת את הטעינה (ולא מתחילים לוח ריק שידרוס את הנתונים בענן)
+      var rc = await fetch('/api/state', { credentials: 'same-origin' });
+      if (rc.status === 401) { location.href = '/login'; throw new Error('נדרשת כניסה'); }
+      if (!rc.ok) throw new Error('טעינת הנתונים מהשרת נכשלה (' + rc.status + ')');
+      var jc = await rc.json();
+      if (!jc || !jc.meta) return null;
+      trFromMeta(jc.meta); TR.loaded = jc.tracks || {};
+      return stateFromParts(jc.meta, jc.blocks || []);
+    }
     if (store.mode === 'tauri') {
       // שגיאה כאן עוצרת את הטעינה (ולא מתחילים לוח ריק שידרוס את הנתונים)
       var rawT = await window.__TAURI__.core.invoke('storage_load');
       if (!rawT) return null;
       var jt = JSON.parse(rawT);
+      trFromMeta(jt.meta); TR.loaded = jt.tracks || {};
       return stateFromParts(jt.meta, jt.blocks || []);
     }
     if (store.mode === 'local') {
       try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
       var raw = lsGet('mz-state-v1');
       if (!raw) return null;
-      try { var j = JSON.parse(raw); return stateFromParts(j.meta, j.blocks || []); } catch (e) { return null; }
+      try {
+        var j = JSON.parse(raw); trFromMeta(j.meta); TR.loaded = {};
+        TR.list.forEach(function (t) { if (t.id === 'me') return; try { var tj = JSON.parse(lsGet('mz-track-' + t.id) || 'null'); if (tj) TR.loaded[t.id] = tj; } catch (x) { } });
+        return stateFromParts(j.meta, j.blocks || []);
+      } catch (e) { return null; }
     }
     return null;
   }
-  function blockDoc(b) {
-    var S = E.getState(), out = {}, lo = b * BLK, hi = lo + BLK;
+  function blockDoc(b, st) {
+    var S = st || PS(), out = {}, lo = b * BLK, hi = lo + BLK;
     Object.keys(S.cells).forEach(function (k) {
       var m = S.cells[k], o = null;
       for (var key in m) { var r = +key; if (r >= lo && r < hi) { (o || (o = {}))[key] = m[key]; } }
@@ -1361,9 +1608,13 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
     return { cells: out };
   }
   function trimRows(rows) { var n = lastFilled(rows) + 1; return rows.slice(0, n); }
-  function metaDoc() { var S = E.getState(); return { v: 2, sys: S.sys, nosaf: trimRows(S.nosaf), chovot: trimRows(S.chovot), log: S.log.slice(-200) }; }
-  function allBlocks() {
-    var S = E.getState(), set = {};
+  function metaDoc(st) {
+    var S = st || PS(), m = { v: 2, sys: S.sys, nosaf: trimRows(S.nosaf), chovot: trimRows(S.chovot), log: S.log.slice(-200) };
+    if (!st && TR.list.length > 1) m.tracks = trMeta();
+    return m;
+  }
+  function allBlocks(st) {
+    var S = st || PS(), set = {};
     Object.keys(S.cells).forEach(function (k) { Object.keys(S.cells[k]).forEach(function (r) { set[Math.floor(+r / BLK)] = true; }); });
     return Object.keys(set).map(Number);
   }
@@ -1384,7 +1635,7 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
         var bl = {};
         if (full) { allBlocks().forEach(function (b) { bl[b] = true; }); }
         Object.keys(rows).forEach(function (r) { bl[Math.floor(+r / BLK)] = true; });
-        for (var b in bl) { var d = blockDoc(+b); await col().doc('b' + b).set(d); store.known['b' + b] = true; }
+        for (var b in bl) { var d = blockDoc(+b, PS()); await col().doc('b' + b).set(d); store.known['b' + b] = true; }
         if (full) {
           var live = {}; allBlocks().forEach(function (b) { live['b' + b] = true; });
           for (var id in store.known) if (!live[id]) { await col().doc(id).delete(); delete store.known[id]; }
@@ -1393,10 +1644,19 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
         setStatus('saved', 'נשמר');
         registerMember();
       } else if (store.mode === 'tauri') {
-        try { await window.__TAURI__.core.invoke('storage_save', { data: JSON.stringify({ meta: metaDoc(), blocks: allBlocks().map(blockDoc) }) }); setStatus('saved', 'נשמר (מוצפן)'); }
+        try { await window.__TAURI__.core.invoke('storage_save', { data: JSON.stringify({ meta: metaDoc(), blocks: allBlocks().map(function (b) { return blockDoc(b); }), tracks: trPayloads() }) }); setStatus('saved', 'נשמר (מוצפן)'); }
         catch (e) { setStatus('error', 'השמירה נכשלה'); }
+      } else if (store.mode === 'cloud') {
+        var rs = await fetch('/api/state', { method: 'PUT', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-MZ': '1' },
+          body: JSON.stringify({ meta: metaDoc(), blocks: allBlocks().map(function (b) { return blockDoc(b); }), tracks: trPayloads() }) });
+        if (rs.status === 401) { location.href = '/login'; return; }
+        if (!rs.ok) throw new Error('השמירה בשרת נכשלה (' + rs.status + ')');
+        setStatus('saved', 'נשמר בענן');
       } else if (store.mode === 'local') {
-        var ok = lsSet('mz-state-v1', JSON.stringify({ meta: metaDoc(), blocks: allBlocks().map(blockDoc) }));
+        var ok = lsSet('mz-state-v1', JSON.stringify({ meta: metaDoc(), blocks: allBlocks().map(function (b) { return blockDoc(b); }) }));
+        var tp = trPayloads();
+        Object.keys(tp).forEach(function (id) { ok = lsSet('mz-track-' + id, JSON.stringify(tp[id])) && ok; });
+        try { Object.keys(localStorage).forEach(function (k) { if (/^mz-track-/.test(k) && !tp[k.slice(9)]) localStorage.removeItem(k); }); } catch (x) { }
         setStatus(ok ? 'saved' : 'error', ok ? 'נשמר בדפדפן זה' : 'השמירה נכשלה');
       }
     }).catch(function (e) {
@@ -1410,6 +1670,421 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
       setStatus('error', q ? 'האחסון מלא' : 'השמירה נכשלה');
       if (q) showModal({ kind: 'err', title: 'האחסון מלא', text: 'לא ניתן לשמור שינויים נוספים. כדאי לייצא גיבוי ממסך "כלים וגיבוי".' });
     });
+  }
+
+  // ---------- מסלולים: מסלול אישי + מסגרות (לוח של כולל) ----------
+  // המנוע מחזיק מסלול אחד בכל רגע (TR.active). לכל מסלול עותק נתונים משלו (TR.states).
+  // TR.view = מזהה מסלול או 'all' (כל המסלולים יחד, עם נקודת צבע).
+  var TR_COLORS = ['#c58b1a', '#2f8f5b', '#8a4fb5', '#c0504d', '#1f8a9e'];
+  window.MZ_TR = null;
+  var TR = { list: [{ id: 'me', name: 'מסלול אישי', kind: 'personal', color: '#2f6db3' }], states: {}, active: 'me', view: 'me', proj: {}, loaded: {} };
+  window.MZ_TR = TR;
+  function PS() { return TR.states.me || E.getState(); }
+  function trOf(id) { for (var i = 0; i < TR.list.length; i++) if (TR.list[i].id === id) return TR.list[i]; return null; }
+  function trVisible() { return TR.list.filter(function (t) { return !t.hidden; }); }
+  function trMulti() { return trVisible().length > 1; }
+  function trCur() { return trOf(TR.view) || trOf(TR.active); }
+  function isFrameView() { var t = trOf(TR.view); return !!(t && t.kind === 'frame'); }
+  function isAllView() { return TR.view === 'all'; }
+  function trSanitize(t) {
+    var o = { id: t.id, name: t.name, kind: t.kind, color: t.color };
+    if (t.hidden) o.hidden = true;
+    if (t.kind === 'frame') { o.weeks = t.weeks || []; o.marks = t.marks || {}; o.paid = t.paid || {}; o.weekOk = t.weekOk || ''; o.created = t.created || ''; o.updated = t.updated || ''; o.lastRow = t.lastRow || 0; }
+    return o;
+  }
+  function trMeta() { return TR.list.map(trSanitize); }
+  function trFromMeta(meta) {
+    var list = meta && Array.isArray(meta.tracks) ? meta.tracks : null;
+    if (!list || !list.length) return;
+    var me = list.filter(function (t) { return t.id === 'me'; })[0];
+    TR.list = (me ? [] : [TR.list[0]]).concat(list.map(function (t) { var o = trSanitize(t); return o; }));
+  }
+  // ---------- ערכי תאים לכל מסלול ----------
+  function valIn(id, r, c) {
+    if (id === TR.active) return E.get(r, c);
+    var st = TR.states[id]; if (!st) return '';
+    return E.getIn(st, TR.proj[id] || null, r, c);
+  }
+  // שימור חודשי של מסלולים שלא טעונים במנוע: מחליפים זמנית את המצב במנוע
+  var projBusy = null;
+  function ensureProjAll(from, to) {
+    if (!isAllView()) return Promise.resolve(false);
+    var need = trVisible().filter(function (t) {
+      if (t.id === TR.active || !TR.states[t.id]) return false;
+      var p = TR.proj[t.id]; if (!p) return true;
+      if (p.tried[from + ':' + to]) return false;
+      for (var r = Math.max(from, p.live || from); r <= to; r++) if (!p.proj[r]) return true;
+      return false;
+    });
+    if (!need.length) return Promise.resolve(false);
+    if (projBusy) return projBusy;
+    projBusy = (async function () {
+      try {
+        for (var i = 0; i < need.length; i++) {
+          var t = need[i], p = TR.proj[t.id] || (TR.proj[t.id] = { live: 0, proj: {}, tried: {} });
+          p.tried[from + ':' + to] = 1;
+          var res = await E.monthlyFor(TR.states[t.id], from, to);
+          if (res && res.live) { if (res.live !== p.live) { p.live = res.live; p.proj = {}; } (res.rows || []).forEach(function (x) { p.proj[x[0]] = [x[1], x[2]]; }); }
+          else p.live = E.LAST_ROW + 1;
+        }
+      } catch (e) { console.error(e); }
+      finally { projBusy = null; }
+      return true;
+    })();
+    return projBusy;
+  }
+  // ---------- דפים בתא, סימון "לא נלמד" ----------
+  function cellDafs(v) {
+    var out = [], m = '';
+    String(v || '').split(/\s*[,،]\s*/).forEach(function (piece) {
+      piece = piece.trim(); if (!piece) return;
+      var p = IMPORTER.parseDaf(piece);
+      if (!p || !p.known) { var p2 = m ? IMPORTER.parseDaf(m + ' ' + piece) : null; if (p2 && p2.known) p = p2; else return; }
+      m = p.m;
+      for (var d = p.a; d <= (p.b || p.a); d++) out.push(p.m + '|' + d);
+    });
+    return out;
+  }
+  function dafLabel(k) { var p = k.split('|'); return p[0] + ' ' + FRAME.punct(+p[1]); }
+  function markKey(r, c) { return r + ':' + c; }
+  // {all:[..], miss:[..], cls:'' | 'mk-red' | 'mk-org', label}
+  function markInfo(t, r, c, v) {
+    var all = cellDafs(v), mk = (t.marks || {})[markKey(r, c)] || [];
+    var miss = mk.filter(function (k) { return all.indexOf(k) >= 0; });
+    if (!all.length || !miss.length) return { all: all, miss: miss, cls: '', label: '' };
+    if (miss.length === all.length) return { all: all, miss: miss, cls: 'mk-red', label: 'חוב' };
+    return { all: all, miss: miss, cls: 'mk-org', label: (all.length - miss.length) + '/' + all.length };
+  }
+  var MARK_COLS = { 4: 1, 5: 1, 6: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1 };
+  function toggleMark(id, r, c, k) {
+    var t = trOf(id); if (!t) return;
+    t.marks = t.marks || {};
+    var key = markKey(r, c), list = t.marks[key] || [], i = list.indexOf(k);
+    if (i >= 0) list.splice(i, 1); else list.push(k);
+    if (list.length) t.marks[key] = list; else delete t.marks[key];
+    scheduleSave(true);
+    renderRows(true); renderToday(); if (VIEW === 'phone') renderPhone(); if (pickerAt) openPicker(pickerAt[0], pickerAt[1]);
+  }
+  // חובות אוטומטיים מהסימונים: [מסכת, מדף, עד, בפנים חוב, בפנים נפרע, סיכום חוב, סיכום נפרע]
+  var BEFANIM = { 4: 1, 11: 1, 12: 1, 13: 1 };
+  function autoDebts(t) {
+    var out = [];
+    Object.keys(t.marks || {}).forEach(function (key) {
+      var rc = key.split(':'), r = +rc[0], c = +rc[1];
+      (t.marks[key] || []).forEach(function (k) {
+        var p = k.split('|'), b = BEFANIM[c] ? 1 : 0, s = c === 5 ? 8 : (BEFANIM[c] ? 0 : 1);
+        out.push({ key: key + '|' + k, r: r, c: c, m: p[0], d: +p[1], b: b, s: s, paid: +((t.paid || {})[key + '|' + k] || 0) });
+      });
+    });
+    out.sort(function (a, b) { return a.r - b.r || a.c - b.c; });
+    return out;
+  }
+  function debtRows(t) {
+    return autoDebts(t).map(function (x) {
+      var d = E.NumberToHebrew(x.d), pb = Math.min(x.paid, x.b), ps = Math.min(Math.max(0, x.paid - x.b), x.s);
+      return [x.m, d, d, x.b ? String(x.b) : '', pb ? String(pb) : '', x.s ? String(x.s) : '', ps ? String(ps) : ''];
+    });
+  }
+  // ---------- מעבר בין מסלולים ----------
+  var switching = null;
+  async function switchTrack(id) {
+    if (id === TR.active || !TR.states[id]) return;
+    if (switching) await switching;
+    switching = (async function () {
+      await E.setState(TR.states[id]); E.takeDirty(); E.resetProj();
+      TR.active = id; delete TR.proj[id];
+      if (await E.MainGate(new Date())) scheduleSave(true);
+      E.takeMsgs();
+    })();
+    try { await switching; } finally { switching = null; }
+  }
+  async function setView(v) {
+    if (v !== 'all' && !trOf(v)) v = 'me';
+    TR.view = v; lsSet('mz-trview', v);
+    if (v !== 'all') await switchTrack(v);
+    selRow = 0; $('drawer').hidden = true;
+    renderToday(); setupGrid(); scrollToRow(todayRow, 1); if (VIEW === 'phone') renderPhone();
+    $('emptyNote').hidden = TR.view !== 'me' || Object.keys(PS().cells.C).length > 0 || lsGet('mz-emptyDismissed') === '1';
+  }
+  function trDot(t) { return '<i class="trdot" style="background:' + esc(t.color) + '"></i>'; }
+  function trTabs() {
+    if (!trMulti()) return '';
+    var h = '<div class="trtabs" role="tablist" aria-label="מסלול">';
+    trVisible().forEach(function (t) { h += '<button type="button" role="tab" data-trv="' + esc(t.id) + '" aria-selected="' + (TR.view === t.id) + '">' + trDot(t) + esc(t.name) + '</button>'; });
+    h += '<button type="button" role="tab" data-trv="all" aria-selected="' + (TR.view === 'all') + '">הכל</button></div>';
+    return h;
+  }
+  function bindTrTabs(root) { root.querySelectorAll('[data-trv]').forEach(function (b) { b.onclick = function () { setView(b.dataset.trv); }; }); }
+  function fmtStamp(iso) {
+    if (!iso) return '';
+    var d = new Date(iso), r = E.rowOfDate(d);
+    return E.inRange(r) ? E.bText(r).replace(/ \S+$/, '') : d.toLocaleDateString('he-IL');
+  }
+  function weekOkHtml() {
+    var t = trOf(TR.view); if (!t || t.kind !== 'frame') return '';
+    return '<button type="button" class="btn weekok" id="weekOk">✓ השבוע מעודכן</button>' + (t.weekOk ? '<small class="weekok-at">לחצת לאחרונה: ' + esc(fmtStamp(t.weekOk)) + '</small>' : '');
+  }
+  function bindWeekOk() {
+    var b = $('weekOk'); if (!b) return;
+    b.onclick = function () { var t = trOf(TR.view); if (!t) return; t.weekOk = new Date().toISOString(); scheduleSave(true); renderToday(); if (VIEW === 'phone') renderPhone(); };
+  }
+  // ---------- תא בגיליון: מסגרת והכל ----------
+  function frameCellHtml(r, c) {
+    var t = trOf(TR.view), v = E.get(r, c);
+    if (v === '') return { cls: '', inner: '' };
+    var mi = MARK_COLS[c] ? markInfo(t, r, c, v) : { cls: '', label: '' };
+    return { cls: 'mk ' + mi.cls, inner: '<span title="' + esc(v) + '">' + esc(v) + (mi.label ? ' <b class="mk-l">' + esc(mi.label) + '</b>' : '') + '</span>' };
+  }
+  function allCellHtml(r, c) {
+    var lines = [];
+    trVisible().forEach(function (t) {
+      var v = valIn(t.id, r, c); if (v === '') return;
+      var mi = MARK_COLS[c] ? markInfo(t, r, c, v) : { cls: '', label: '' };
+      lines.push('<span class="al ' + mi.cls + '">' + trDot(t) + '<span>' + esc(v) + (mi.cls === 'mk-org' ? ' <b class="mk-l">' + esc(mi.label) + '</b>' : '') + '</span></span>');
+    });
+    return { cls: lines.length ? 'mk allc' : '', inner: lines.length ? '<div class="alls">' + lines.join('') + '</div>' : '' };
+  }
+  // לחיצה על תא: דף אחד — מסמן ישר; כמה — חלונית בחירה
+  function cellItems(r, c) {
+    var ids = isAllView() ? trVisible().map(function (t) { return t.id; }) : [TR.view], items = [];
+    ids.forEach(function (id) {
+      var t = trOf(id); if (!t) return;
+      var v = valIn(id, r, c); if (v === '') return;
+      var mi = markInfo(t, r, c, v);
+      mi.all.forEach(function (k) { items.push({ id: id, k: k, miss: mi.miss.indexOf(k) >= 0 }); });
+    });
+    return items;
+  }
+  function onMarkCell(r, c) {
+    if (!MARK_COLS[c] || viewing) return;
+    var items = cellItems(r, c); if (!items.length) return;
+    if (items.length === 1) { toggleMark(items[0].id, r, c, items[0].k); return; }
+    openPicker(r, c);
+  }
+  var pickerAt = null;
+  function colName(c) { var d = COLDEFS.filter(function (x) { return x.c === c; })[0]; return d ? d.label.replace(/\s*\(למלא\)/, '').replace(/ בפנים$/, '') : ''; }
+  function openPicker(r, c) {
+    pickerAt = [r, c];
+    var items = cellItems(r, c);
+    var h = '<div class="dh"><h3>' + esc(E.bText(r)) + ' · ' + esc(colName(c)) + '</h3><span style="color:var(--muted)">בחר מה לא נלמד</span><button class="btn x" id="pkClose">סגירה</button></div><div class="pk">';
+    items.forEach(function (it, i) {
+      var t = trOf(it.id);
+      h += '<button type="button" class="pkb' + (it.miss ? ' miss' : '') + '" data-pk="' + i + '">' + (trMulti() ? trDot(t) : '') + esc(dafLabel(it.k)) + ' · ' + (it.miss ? 'לא נלמד' : 'נלמד') + '</button>';
+    });
+    h += '</div><p class="pk-n">דף שסומן "לא נלמד" נוסף לחובות של המסלול שלו.</p>';
+    var box;
+    if (VIEW === 'phone') {
+      var root = $('pkSheet');
+      if (!root) { root = document.createElement('div'); root.id = 'pkSheet'; document.body.appendChild(root); }
+      root.innerHTML = '<div class="pk-bg"></div><div class="pk-sheet drawer" role="dialog" aria-modal="true">' + h + '</div>';
+      box = root;
+      root.querySelector('.pk-bg').onclick = closePicker;
+    } else {
+      box = $('drawer'); box.innerHTML = h; box.hidden = false;
+    }
+    box.querySelector('#pkClose').onclick = closePicker;
+    box.querySelectorAll('[data-pk]').forEach(function (b) {
+      b.onclick = function () { var it = items[+b.dataset.pk]; toggleMark(it.id, r, c, it.k); };
+    });
+  }
+  function closePicker() {
+    pickerAt = null;
+    var s = $('pkSheet'); if (s) s.innerHTML = '';
+    if (VIEW !== 'phone') { $('drawer').hidden = true; selRow = 0; renderRows(true); }
+  }
+  // ---------- ייבוא ועדכון מסגרת ----------
+  function frameDialog(o) {
+    var root = $('modalRoot');
+    root.innerHTML = '<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true" style="width:min(560px,100%)">' + o.html +
+      '<div class="row"><button class="btn primary" id="fdOk">' + esc(o.ok) + '</button><button class="btn" id="fdCancel">ביטול</button></div></div></div>';
+    $('fdCancel').onclick = function () { root.innerHTML = ''; };
+    $('fdOk').onclick = function () { var v = o.read ? o.read() : null; root.innerHTML = ''; o.action(v); };
+  }
+  function frameTitle(rows) {
+    var first = rows[Object.keys(rows).map(Number).sort(function (a, b) { return a - b; })[0]] || {};
+    var t = Object.keys(first).map(function (k) { return String(first[k].v || ''); }).join(' ').trim();
+    return t.split(/\s+[–—-]\s+/)[0].slice(0, 40);
+  }
+  function weeksCompact(weeks) {
+    return weeks.map(function (w) { return { from: w.from, to: w.to, sun: w.sun, mas: w.mas, par: w.par, daf: w.daf, mon: w.mon || [], qtr: w.qtr || [], monTxt: w.monTxt, qtrTxt: w.qtrTxt }; });
+  }
+  async function readFrameFile(f) {
+    var u8 = new Uint8Array(await f.arrayBuffer()), rows;
+    if (/\.csv$/i.test(f.name)) rows = IMPORTER.readCsv(new TextDecoder('utf-8').decode(u8));
+    else { if (!window.fflate) throw new Error('רכיב פתיחת הקבצים לא נטען.'); rows = IMPORTER.readXlsx(u8, window.fflate.unzipSync); }
+    var res = FRAME.read(rows);
+    res.title = frameTitle(rows);
+    return res;
+  }
+  function frameSummary(res) {
+    var w = res.weeks, nNew = w.filter(function (x) { return x.daf; }).length, nRev = w.filter(function (x) { return (x.mon && x.mon.length) || (x.qtr && x.qtr.length); }).length;
+    var h = '<p>' + w.length + ' שבועות: ' + nNew + ' עם דף חדש, ' + nRev + ' שבועות חזרה.\nמ' + esc(E.bText(w[0].from)) + '\nעד ' + esc(E.bText(FRAME.lastRow(w))) + '</p>';
+    if (res.errors.length) h += '<p class="notice">' + res.errors.length + ' שורות עם בעיה (לא ייובאו):\n' + res.errors.slice(0, 8).map(function (e) { return esc(e.t); }).join('\n') + (res.errors.length > 8 ? '\n…' : '') + '</p>';
+    return h;
+  }
+  async function applyCells(id, cellsNew, cellsOld, fromRow) {
+    await switchTrack(id);
+    var keys = {};
+    [cellsNew, cellsOld].forEach(function (cs) { Object.keys(cs || {}).forEach(function (r) { if (+r >= fromRow) Object.keys(cs[r]).forEach(function (c) { keys[r + ':' + c] = [+r, +c]; }); }); });
+    var list = Object.keys(keys).map(function (k) { return keys[k]; }).sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
+    var t = trOf(id), n = 0;
+    for (var i = 0; i < list.length; i++) {
+      var r = list[i][0], c = list[i][1], nv = ((cellsNew[r] || {})[c]) || '', ov = E.get(r, c);
+      if (String(nv) === String(ov)) continue;
+      setStatus('saving', 'מעדכן את המסגרת ' + (++n) + '…');
+      try { await E.onChange(r, c, nv, ov); } catch (e) { console.error(e); }
+      E.takeMsgs();
+      if (t && t.marks) delete t.marks[markKey(r, c)];
+    }
+    if (await E.MainGate(new Date())) { /* נשמר בהמשך */ }
+    E.takeMsgs();
+    return n;
+  }
+  async function importFrame(res, name) {
+    var id = 'f' + Date.now().toString(36), used = TR.list.map(function (t) { return t.color; });
+    var color = TR_COLORS.filter(function (c) { return used.indexOf(c) < 0; })[0] || TR_COLORS[0];
+    var t = { id: id, name: name || 'מסגרת', kind: 'frame', color: color, weeks: weeksCompact(res.weeks), marks: {}, paid: {}, weekOk: '', created: new Date().toISOString(), updated: new Date().toISOString(), lastRow: FRAME.lastRow(res.weeks) };
+    var st = E.emptyState();
+    TR.list.push(t); TR.states[id] = st;
+    await switchTrack(id);
+    await E.initSys(new Date()); E.takeMsgs();
+    var n = await applyCells(id, FRAME.expand(res.weeks).cells, {}, E.FIRST_ROW);
+    // משתמש בלי לימוד אישי: המסלול האישי מוסתר (אפשר להחזיר ב"כלים וגיבוי")
+    var me = trOf('me');
+    if (me && !Object.keys(PS().cells.C).length && !PS().nosaf.length) me.hidden = true;
+    scheduleSave(true);
+    showTab('main');
+    await setView(id);
+    showModal({ title: 'המסגרת נוספה', text: '"' + t.name + '": ' + n + ' תאים נרשמו בלוח.\nבמסלול של מסגרת אין הקלדה: לחיצה על תא מסמנת שלא נלמד, והדף נוסף לחובות.' });
+  }
+  async function updateFrame(id, res) {
+    var t = trOf(id); if (!t) return;
+    var oldX = FRAME.expand(t.weeks || []).cells, newX = FRAME.expand(res.weeks).cells, from = E.rowOfDate(new Date());
+    var back = TR.view;
+    var n = await applyCells(id, newX, oldX, from);
+    // שבועות שעברו נשמרים מהלוח הישן; מהיום והלאה — מהלוח החדש
+    var keep = (t.weeks || []).filter(function (w) { return w.to < from; }), add = weeksCompact(res.weeks).filter(function (w) { return w.to >= from; });
+    t.weeks = keep.concat(add); t.updated = new Date().toISOString(); t.lastRow = FRAME.lastRow(t.weeks);
+    scheduleSave(true);
+    showTab('main');
+    await setView(back);
+    showModal({ title: 'המסגרת עודכנה', text: '"' + t.name + '": ' + (n ? n + ' תאים השתנו מהיום והלאה.' : 'אין שינוי מהיום והלאה.') + '\nימים שעברו לא השתנו.' });
+  }
+  function pickFrameFile(cb) {
+    var inp = $('fileFrame');
+    inp.onchange = function (e) {
+      var f = e.target.files[0]; e.target.value = ''; if (!f) return;
+      readFrameFile(f).then(cb).catch(function (err) { showModal({ kind: 'err', title: 'קובץ המסגרת לא נקרא', text: String(err && err.message || err) }); });
+    };
+    inp.click();
+  }
+  function startImportFrame() {
+    pickFrameFile(function (res) {
+      frameDialog({
+        html: '<h4>ייבוא מסגרת</h4>' + frameSummary(res) + '<label style="display:flex;flex-direction:column;gap:4px;font-weight:600">שם המסגרת<input id="fdName" class="btn" style="font-weight:400" value="' + esc(res.title || 'מסגרת') + '"></label>',
+        ok: 'ייבוא', read: function () { return $('fdName').value.trim(); },
+        action: function (name) { importFrame(res, name).catch(function (e) { console.error(e); showModal({ kind: 'err', text: 'הייבוא נכשל: ' + (e && e.message || e) }); }); }
+      });
+    });
+  }
+  function startUpdateFrame(id) {
+    var t = trOf(id);
+    pickFrameFile(function (res) {
+      frameDialog({
+        html: '<h4>עדכון מסגרת: ' + esc(t.name) + '</h4>' + frameSummary(res) + '<p class="notice">השינוי חל מהיום (' + esc(E.bText(E.rowOfDate(new Date()))) + ') והלאה. ימים שעברו לא משתנים.</p>',
+        ok: 'עדכון',
+        action: function () { updateFrame(id, res).catch(function (e) { console.error(e); showModal({ kind: 'err', text: 'העדכון נכשל: ' + (e && e.message || e) }); }); }
+      });
+    });
+  }
+  async function removeTrack(id) {
+    var t = trOf(id); if (!t || t.id === 'me') return;
+    if (TR.active === id) await switchTrack('me');
+    TR.list = TR.list.filter(function (x) { return x.id !== id; }); delete TR.states[id]; delete TR.proj[id];
+    var me = trOf('me'); if (me && !trVisible().length) me.hidden = false;
+    if (TR.view === id) TR.view = trVisible()[0].id;
+    scheduleSave(true); await setView(TR.view); renderTools();
+  }
+  function tracksCard() {
+    var h = '<div class="card"><h3>המסלולים שלי</h3><p>מסלול אישי — לימוד שאתה רושם בעצמך. מסגרת — לוח של כולל מקובץ אקסל (שורה לכל שבוע: מתאריך, עד תאריך, מסכת, דף חדש, חזרה חודשית, חזרה רבעונית). במסגרת אין הקלדה: לחיצה על תא מסמנת שלא נלמד.</p>';
+    TR.list.forEach(function (t) {
+      h += '<div class="trrow">' + trDot(t) + '<b>' + esc(t.name) + '</b><small>' + (t.kind === 'frame' ? 'מסגרת' + (t.lastRow ? ' · עד ' + esc(E.bText(t.lastRow).replace(/^יום \S+ /, '')) : '') : 'אישי') + (t.hidden ? ' · מוסתר' : '') + '</small><span class="sp"></span>';
+      if (t.kind === 'frame') h += '<button class="btn" data-tupd="' + esc(t.id) + '">עדכון מקובץ</button><button class="btn" data-tdel="' + esc(t.id) + '">הסרה</button>';
+      else h += '<button class="btn" data-thide="' + esc(t.id) + '">' + (t.hidden ? 'הצגה' : 'הסתרה') + '</button>';
+      h += '</div>';
+    });
+    h += '<div class="row"><button class="btn primary" id="tFrame">ייבוא מסגרת מקובץ</button></div></div>';
+    return h;
+  }
+  function bindTracksCard() {
+    $('tFrame').onclick = startImportFrame;
+    document.querySelectorAll('[data-tupd]').forEach(function (b) { b.onclick = function () { startUpdateFrame(b.dataset.tupd); }; });
+    document.querySelectorAll('[data-tdel]').forEach(function (b) {
+      b.onclick = function () { var t = trOf(b.dataset.tdel); confirmBox('הסרת מסגרת', 'המסגרת "' + t.name + '" וכל הסימונים שלה יימחקו מהמכשיר הזה.\nלהמשיך?', 'הסרה', function () { removeTrack(t.id); }); };
+    });
+    document.querySelectorAll('[data-thide]').forEach(function (b) {
+      b.onclick = function () {
+        var t = trOf(b.dataset.thide); if (!t) return;
+        if (!t.hidden && trVisible().length < 2) { showModal({ text: 'אי אפשר להסתיר את המסלול היחיד.' }); return; }
+        t.hidden = !t.hidden; scheduleSave(true);
+        setView(t.hidden && TR.view === t.id ? trVisible()[0].id : TR.view).then(renderTools);
+      };
+    });
+  }
+  // ---------- חובות מהמסגרת ----------
+  function frameDebtsHtml() {
+    var h = '';
+    TR.list.forEach(function (t) {
+      if (t.kind !== 'frame' && !Object.keys(t.marks || {}).length) return;
+      var ds = autoDebts(t); if (!ds.length && t.kind !== 'frame') return;
+      h += '<h3 class="trh">' + trDot(t) + esc(t.name) + ' — דפים שסומנו "לא נלמד"</h3>';
+      if (!ds.length) { h += '<p class="lead">אין חובות. לחיצה על תא בלוח מסמנת שלא נלמד.</p>'; return; }
+      h += '<div class="tbl-center"><div class="tbl-card"><table class="t"><thead><tr><th>תאריך</th><th>מה</th><th>דף</th><th>חוב</th><th>נפרע</th><th>יתרה</th></tr></thead><tbody>';
+      ds.forEach(function (x) {
+        var tot = x.b + x.s, left = Math.max(0, tot - x.paid);
+        h += '<tr><td>' + esc(E.bText(x.r).replace(/ \S+$/, '')) + '</td><td>' + esc(colName(x.c)) + '</td><td>' + esc(x.m + ' ' + FRAME.punct(x.d)) + '</td><td>' + tot + (x.b ? ' בפנים' : ' סיכום') + '</td>' +
+          '<td><input class="w-n" type="number" min="0" step="1" inputmode="numeric" data-trp="' + esc(t.id) + '" data-k="' + esc(x.key) + '" value="' + (x.paid || '') + '" placeholder="0"></td>' +
+          '<td class="yt' + (left === 0 ? ' done' : '') + '">' + left + '</td></tr>';
+      });
+      h += '</tbody></table></div></div>';
+    });
+    return h;
+  }
+  function bindFrameDebts(root) {
+    root.querySelectorAll('[data-trp]').forEach(function (inp) {
+      inp.onchange = function () { var t = trOf(inp.dataset.trp); if (!t) return; t.paid = t.paid || {}; var n = E.Cnt(inp.value); if (n) t.paid[inp.dataset.k] = n; else delete t.paid[inp.dataset.k]; scheduleSave(true); renderChovot(); };
+    });
+  }
+  // ---------- האוצר: סכום כל המסלולים (דף שנלמד בשני מסלולים נספר פעמיים) ----------
+  async function buildOtzarAll() {
+    var vis = trVisible().filter(function (t) { return TR.states[t.id]; }), sum = {}, order = [], any = false;
+    for (var i = 0; i < vis.length; i++) {
+      var t = vis[i], res;
+      try { res = t.id === TR.active ? await E.BuildOtzarMy(new Date(), debtRows(t)) : await E.otzarFor(TR.states[t.id], new Date(), debtRows(t)); }
+      catch (e) { console.error(e); continue; }
+      if (!res || res.empty) continue;
+      any = true;
+      res.rows.forEach(function (x) { if (!sum[x[0]]) { sum[x[0]] = [x[0], 0, 0]; order.push(x[0]); } sum[x[0]][1] += x[1]; sum[x[0]][2] += x[2]; });
+    }
+    if (!any) return { empty: true, rows: [] };
+    if (vis.length === 1) return { rows: order.map(function (k) { return sum[k]; }) };
+    var idx = {}; E.OT_LIST.forEach(function (m, i) { idx[m] = i; });
+    order.sort(function (a, b) {
+      var ma = a.replace(/ \S+$/, ''), mb = b.replace(/ \S+$/, '');
+      if (ma !== mb) return (idx[ma] == null ? 99 : idx[ma]) - (idx[mb] == null ? 99 : idx[mb]);
+      return DAF_LIST.indexOf(a.slice(ma.length + 1)) - DAF_LIST.indexOf(b.slice(mb.length + 1));
+    });
+    return { rows: order.map(function (k) { return sum[k]; }) };
+  }
+  // ---------- שמירה וטעינה של המסלולים ----------
+  function trPayloads() {
+    var out = {};
+    TR.list.forEach(function (t) { if (t.id !== 'me' && TR.states[t.id]) out[t.id] = { meta: metaDoc(TR.states[t.id]), blocks: allBlocks(TR.states[t.id]).map(function (b) { return blockDoc(b, TR.states[t.id]); }) }; });
+    return out;
+  }
+  function trLoadParts(parts) { // {id: {meta, blocks}}
+    Object.keys(parts || {}).forEach(function (id) { if (trOf(id) && id !== 'me') TR.states[id] = stateFromParts(parts[id].meta, parts[id].blocks || []); });
+    TR.list = TR.list.filter(function (t) { return t.id === 'me' || TR.states[t.id]; });
   }
 
   // ---------- גיליון ראשי ----------
@@ -1465,7 +2140,8 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
     }).join(' '));
     sc.style.setProperty('--minw', minTotal + 'px');
     sc.style.setProperty('--wa', (cols[0].c === 1 ? COLDEFS[0].w : 0) + 'px');
-    $('ghead').innerHTML = cols.map(function (d) { return '<div class="' + (d.st ? 'st ' + d.st : '') + (d.edit ? ' edit' : '') + '">' + esc(d.label) + '</div>'; }).join('');
+    var roHead = isFrameView() || isAllView();
+    $('ghead').innerHTML = cols.map(function (d) { return '<div class="' + (d.st ? 'st ' + d.st : '') + (d.edit ? ' edit' : '') + '">' + esc(roHead ? d.label.replace(/\s*\(למלא\)/, '') : d.label) + '</div>'; }).join('');
     $('gbody').style.height = ((E.LAST_ROW - E.FIRST_ROW + 1) * rh()) + 'px';
     renderRows(true);
   }
@@ -1483,7 +2159,7 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
       keep = { id: ae.id, v: ae.value, s: ae.selectionStart, e: ae.selectionEnd };
     }
     lastStart = start;
-    var cols = visCols(), html = [];
+    var cols = visCols(), html = [], fv = isFrameView(), av = isAllView();
     for (var i = start; i < start + count; i++) {
       var r = E.FIRST_ROW + i;
       if (r > E.LAST_ROW) break;
@@ -1499,8 +2175,19 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
         else if (c === 2 && VIEW === 'tablet') inner = '<span class="dt2" title="' + esc(E.bText(r)) + '"><b>' + esc(E.bText(r).replace(/ \S+$/, '')) + '</b><small>' + fmtA(r) + '</small></span>';
         else if (c === 2) inner = '<span title="' + esc(E.bText(r)) + '">' + esc(E.bText(r)) + '</span>';
         else if (c === 3) {
-          if (wd === 0) { ccls += ' cm merge'; inner = '<div class="mbox">' + cellInput(r, 3, 'דף חדש') + '</div>'; }
+          if (wd === 0) {
+            ccls += ' cm merge';
+            if (fv || av) {
+              var c3 = av ? allCellHtml(r, 3) : { inner: esc(E.get(r, 3)) };
+              inner = '<div class="mbox ro"><div class="mval">' + (c3.inner || (fv ? '<small>' + (E.get(r, 11) || E.get(r, 12) ? 'שבוע חזרה' : '') + '</small>' : '')) + '</div></div>';
+            } else inner = '<div class="mbox">' + cellInput(r, 3, 'דף חדש') + '</div>';
+          }
           else if (wd <= 4) { ccls += ' cm cont'; }
+        } else if (fv || av) {
+          var fc = av ? allCellHtml(r, c) : frameCellHtml(r, c);
+          if (fc.cls) ccls += ' ' + fc.cls;
+          inner = fc.inner;
+          if (MARK_COLS[c] && fc.inner) ccls += '" data-c="' + c;
         } else if (d.edit) inner = cellInput(r, c, '');
         else { var v = E.get(r, c); if (v !== '') inner = '<span title="' + esc(v) + '">' + esc(v) + '</span>'; }
         html.push('<div' + (ccls ? ' class="' + ccls + '"' : '') + '>' + inner + '</div>');
@@ -1514,6 +2201,7 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
     E.ensureProj(E.FIRST_ROW + start, E.FIRST_ROW + start + count).then(function (got) {
       if (got) { renderRows(true); if (selRow) renderDrawer(); }
     });
+    if (av) ensureProjAll(E.FIRST_ROW + start, E.FIRST_ROW + start + count).then(function (got) { if (got) renderRows(true); });
     // סימון תאים שהטקסט שלהם נחתך
     win.querySelectorAll('.grow > div > span').forEach(function (sp) { if (sp.scrollHeight > sp.clientHeight + 1) sp.parentNode.classList.add('more'); });
     if (keep) {
@@ -1537,19 +2225,21 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
     scheduleSave();
     setTimeout(function () {
       renderRows(true); renderToday(); if (selRow) renderDrawer(); if (VIEW === 'phone') renderPhone(); flushMsgs();
-      if (Object.keys(E.getState().cells.C).length > 0) $('emptyNote').hidden = true;
+      if (Object.keys(PS().cells.C).length > 0) $('emptyNote').hidden = true;
     }, 0);
   }
   function renderToday() {
     var r = todayRow, bar = $('todaybar');
     E.ensureProj(r, r).then(function (got) { if (got) renderToday(); });
+    if (isAllView()) ensureProjAll(r, r).then(function (got) { if (got) renderToday(); });
     var parts = [];
     if (E.inRange(r)) {
       [[4, 'בפנים'], [5, 'סיכום 8 פעמים'], [6, 'סיכום פעם אחת'], [9, 'שימור שבועי/דו שבועי'], [10, 'שימור חודשי'], [11, 'חזרה חודשית'], [12, 'חזרה רבעונית'], [13, 'חזרה שנתית']].forEach(function (p) {
+        if (isAllView()) { trVisible().forEach(function (t) { var v2 = valIn(t.id, r, p[0]); if (v2 !== '') parts.push('<span class="chip">' + trDot(t) + '<b>' + p[1] + '</b>' + esc(v2) + '</span>'); }); return; }
         var v = E.get(r, p[0]); if (v !== '') parts.push('<span class="chip"><b>' + p[1] + '</b>' + esc(v) + '</span>');
       });
     }
-    bar.innerHTML = '<div class="when">היום<small>' + (E.inRange(r) ? esc(E.bText(r)) : '') + '</small></div>' +
+    bar.innerHTML = trTabs() + weekOkHtml() + '<div class="when">היום<small>' + (E.inRange(r) ? esc(E.bText(r)) : '') + '</small></div>' +
       '<div class="chips">' + (parts.length ? parts.join('') : '<span class="chip">אין לימוד רשום להיום</span>') + '</div>' +
       '<div class="tools"><button class="btn" id="goToday">קפיצה להיום</button>' +
       '<input type="date" class="btn" id="goDate" aria-label="מעבר לתאריך">' +
@@ -1557,6 +2247,7 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
     $('goToday').onclick = function () { scrollToRow(todayRow, 1); };
     $('goDate').onchange = function (e) { var v = e.target.value; if (!v) return; var p = v.split('-'); var rr = E.rowOfDate(new Date(+p[0], +p[1] - 1, +p[2])); if (E.inRange(rr)) { selRow = rr; scrollToRow(rr, 1); renderDrawer(); } };
     $('togGH').onchange = function (e) { showHidden = e.target.checked; lsSet('mz-showGH', showHidden ? '1' : '0'); setupGrid(); };
+    bindTrTabs(bar); bindWeekOk();
   }
   function cellInput(r, c, ph) {
     var v = esc(E.get(r, c));
@@ -1579,16 +2270,36 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
       var rr = sun + i, cls = (rr === r ? 'on ' : '') + (i >= 5 ? 'wkd ' : '') + (rr === todayRow ? 'td' : '');
       h += '<button type="button" class="' + cls + '" data-pr="' + rr + '">' + DAYLET[i] + '<small>' + esc(hebDay(rr)) + '</small></button>';
     }
-    h += '</div><div class="pd-body">';
+    h += '</div>';
+    if (trMulti()) h += '<div class="pd-tr">' + trTabs() + '</div>';
+    h += '<div class="pd-body">';
     if (r !== todayRow) h += '<button type="button" class="btn pd-go" id="pdToday">חזרה להיום</button>';
-    if (wd <= 4) h += '<section class="pd-card"><div class="pd-daf"><label for="pdDaf" style="font-weight:700">דף חדש לשבוע</label>' + phoneInput(sun, 3, 'דף חדש').replace('<input ', '<input id="pdDaf" ') + '<small>חל על ראשון עד חמישי</small></div></section>';
+    var fvp = isFrameView(), avp = isAllView();
+    if (isAllView()) ensureProjAll(sun, sun + 6).then(function (got) { if (got) renderPhone(); });
+    function pval(c) {
+      if (avp) {
+        var ls = [];
+        trVisible().forEach(function (t) { var v1 = valIn(t.id, r, c); if (v1 === '') return; var mi1 = MARK_COLS[c] ? markInfo(t, r, c, v1) : {}; ls.push('<span class="al ' + (mi1.cls || '') + '">' + trDot(t) + esc(v1) + (mi1.label ? ' <b class="mk-l">' + esc(mi1.label) + '</b>' : '') + '</span>'); });
+        return ls.length ? '<span class="v mk" data-pc="' + c + '">' + ls.join('') + '</span>' : '<span class="v">—</span>';
+      }
+      var v = E.get(r, c);
+      if (v === '') return '<span class="v">—</span>';
+      if (fvp && MARK_COLS[c]) { var mi = markInfo(trOf(TR.view), r, c, v); return '<span class="v mk ' + mi.cls + '" data-pc="' + c + '">' + esc(String(v).split(/\s*,\s*/).join('\n')) + (mi.label ? ' <b class="mk-l">' + esc(mi.label) + '</b>' : '') + '</span>'; }
+      return '<span class="v">' + esc(String(v).split(/\s*,\s*/).join('\n')) + '</span>';
+    }
+    if (wd <= 4) {
+      if (fvp || avp) h += '<section class="pd-card"><div class="pd-row"><span>דף חדש לשבוע</span>' + (avp ? (function () { var ls = []; trVisible().forEach(function (t) { var v3 = valIn(t.id, sun, 3); if (v3 !== '') ls.push('<span class="al">' + trDot(t) + esc(v3) + '</span>'); }); return '<span class="v">' + (ls.join('') || '—') + '</span>'; })() : '<span class="v">' + esc(E.get(sun, 3) || '—') + '</span>') + '</div></section>';
+      else h += '<section class="pd-card"><div class="pd-daf"><label for="pdDaf" style="font-weight:700">דף חדש לשבוע</label>' + phoneInput(sun, 3, 'דף חדש').replace('<input ', '<input id="pdDaf" ') + '<small>חל על ראשון עד חמישי</small></div></section>';
+    }
     var view = [[4, 'בפנים'], [5, 'סיכום 8 פעמים'], [6, 'סיכום פעם אחת'], [9, 'שימור שבועי/דו שבועי'], [10, 'שימור חודשי']];
     h += '<section class="pd-card"><h3>מה לומדים ' + (r === todayRow ? 'היום' : 'ביום הזה') + '</h3>' + view.map(function (p) {
-      var v = E.get(r, p[0]); return '<div class="pd-row"><span>' + p[1] + '</span><span class="v">' + (v === '' ? '—' : esc(String(v).split(/\s*,\s*/).join('\n'))) + '</span></div>';
+      return '<div class="pd-row"><span>' + p[1] + '</span>' + pval(p[0]) + '</div>';
     }).join('') + '</section>';
     h += '<section class="pd-card"><h3>חזרות</h3>' + [[11, 'חזרה חודשית'], [12, 'חזרה רבעונית'], [13, 'חזרה שנתית']].map(function (p) {
-      return '<div class="pd-row"><span>' + p[1] + '</span>' + phoneInput(r, p[0], 'דף או טווח') + '</div>';
-    }).join('') + '</section></div>';
+      return '<div class="pd-row"><span>' + p[1] + '</span>' + (fvp || avp ? pval(p[0]) : phoneInput(r, p[0], 'דף או טווח')) + '</div>';
+    }).join('') + '</section>';
+    if (fvp) h += weekOkHtml().replace('class="btn weekok"', 'class="btn weekok pd-wk"');
+    h += '</div>';
     var keep = document.activeElement && box.contains(document.activeElement) ? document.activeElement.dataset.r + ':' + document.activeElement.dataset.c : '';
     box.innerHTML = h;
     if (keep) { var k = box.querySelector('[data-r="' + keep.split(':')[0] + '"][data-c="' + keep.split(':')[1] + '"]'); if (k) k.focus({ preventScroll: true }); }
@@ -1596,6 +2307,8 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
     $('pdNext').onclick = function () { if (E.inRange(pRow + 1)) { pRow++; renderPhone(); } };
     if ($('pdToday')) $('pdToday').onclick = function () { pRow = todayRow; renderPhone(); };
     box.querySelectorAll('[data-pr]').forEach(function (b) { b.onclick = function () { pRow = +b.dataset.pr; renderPhone(); }; });
+    box.querySelectorAll('[data-pc]').forEach(function (b) { b.onclick = function () { onMarkCell(r, +b.dataset.pc); }; });
+    bindTrTabs(box); bindWeekOk();
   }
   function bindPhone() {
     var box = $('phoneDay');
@@ -1657,6 +2370,11 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
     win.addEventListener('click', function (e) {
       if (e.target.classList.contains('cell-in')) return;
       var row = e.target.closest('.grow'); if (!row) return;
+      if (isFrameView() || isAllView()) {
+        var cd = e.target.closest('[data-c]');
+        if (cd) { onMarkCell(+row.dataset.r, +cd.dataset.c); return; }
+        if (pickerAt) return;
+      }
       selRow = +row.dataset.r; renderRows(true); renderDrawer();
     });
   }
@@ -1691,7 +2409,7 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
     });
   }
   function renderNosaf() {
-    var S = E.getState(), n = Math.max(1, S.nosaf.length);
+    var S = PS(), n = Math.max(1, S.nosaf.length);
     var h = '<h2>לימוד שלי נוסף</h2><p class="lead">לימוד מחוץ לסדר הכולל. בוחרים מסכת ודף ("עד" — רק לטווח), ורושמים כמה פעמים נלמד בפנים וכמה בסיכום. כל פעם נספרת ב"האוצר שלי".</p>';
     h += '<div class="tbl-center"><div class="tbl-card"><table class="t" id="nosafT"><thead><tr><th>#</th><th>מסכת</th><th>מדף</th><th>עד</th><th>בפנים</th><th>סיכום</th><th>תאריך</th><th></th></tr></thead><tbody>';
     for (var r = 0; r < n; r++) {
@@ -1706,11 +2424,11 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
     h += '</tbody></table><div class="tbl-foot"><button class="btn-add" id="nosafAdd" type="button">+ הוסף שורה</button></div></div></div>';
     $('nosafPad').innerHTML = h;
     labelRows('nosafT', ['', 'מסכת', 'מדף', 'עד', 'בפנים', 'סיכום', 'תאריך']);
-    wireRows('nosafT', 'nosafAdd', function () { return E.getState().nosaf; }, E.NOSAF_W, 'ns-', renderNosaf);
+    wireRows('nosafT', 'nosafAdd', function () { return PS().nosaf; }, E.NOSAF_W, 'ns-', renderNosaf);
     $('nosafT').addEventListener('change', function (e) {
       var t = e.target, r = +t.dataset.r, i = +t.dataset.i;
       if (isNaN(r) || isNaN(i)) return;
-      var row = rowAt(E.getState().nosaf, r, E.NOSAF_W);
+      var row = rowAt(PS().nosaf, r, E.NOSAF_W);
       if (i === 3 || i === 4) { var c = E.Cnt(t.value); row[i] = c ? String(c) : ''; t.value = row[i]; }
       else row[i] = t.value;
       if (i === 1) syncTo(row, $('ns-' + r + '-2'));
@@ -1732,7 +2450,7 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
     return '<td class="yt' + (has && y === 0 ? ' done' : '') + '" id="yt-' + r + '-' + k + '">' + (has ? y : '') + '</td>';
   }
   function renderChovot() {
-    var S = E.getState(), n = Math.max(1, S.chovot.length);
+    var S = PS(), n = Math.max(1, S.chovot.length);
     var h = '<h2>חובות</h2><p class="lead">דפים שנשארו חוב. לכל דף בטווח: כמה פעמים חייבים וכמה כבר נפרע. היתרה (חוב פחות נפרע) יורדת מהספירה ב"האוצר שלי". יתרה 0 = הושלם.</p>';
     h += '<div class="tbl-center"><div class="tbl-card"><table class="t" id="chovotT"><thead><tr><th rowspan="2">#</th><th rowspan="2">מסכת</th><th rowspan="2">מדף</th><th rowspan="2">עד</th><th colspan="3" class="grp">בפנים</th><th colspan="3" class="grp">סיכום</th><th rowspan="2"></th></tr>' +
       '<tr><th>חוב</th><th>נפרע</th><th>יתרה</th><th>חוב</th><th>נפרע</th><th>יתרה</th></tr></thead><tbody>';
@@ -1746,13 +2464,16 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
         numIn('ch-' + r + '-5', r, 5, row[5]) + numIn('ch-' + r + '-6', r, 6, row[6]) + ytCell(row, r, 1) + delCell(r) + '</tr>';
     }
     h += '</tbody></table><div class="tbl-foot"><button class="btn-add" id="chovotAdd" type="button">+ הוסף שורה</button></div></div></div>';
+    var fdh = frameDebtsHtml();
+    if (fdh) h = h.replace('<div class="tbl-center">', '<h3 class="trh">' + (trMulti() ? trDot(trOf('me')) : '') + 'חובות שרשמתי בעצמי</h3><div class="tbl-center">') + fdh;
     $('chovotPad').innerHTML = h;
+    bindFrameDebts($('chovotPad'));
     labelRows('chovotT', ['', 'מסכת', 'מדף', 'עד', 'בפנים: חוב', 'בפנים: נפרע', 'בפנים: יתרה', 'סיכום: חוב', 'סיכום: נפרע', 'סיכום: יתרה']);
-    wireRows('chovotT', 'chovotAdd', function () { return E.getState().chovot; }, E.CHOVOT_W, 'ch-', renderChovot);
+    wireRows('chovotT', 'chovotAdd', function () { return PS().chovot; }, E.CHOVOT_W, 'ch-', renderChovot);
     $('chovotT').addEventListener('change', function (e) {
       var t = e.target, r = +t.dataset.r, i = +t.dataset.i;
       if (isNaN(r) || isNaN(i)) return;
-      var row = rowAt(E.getState().chovot, r, E.CHOVOT_W);
+      var row = rowAt(PS().chovot, r, E.CHOVOT_W);
       if (i >= 3) { var c = E.Cnt(t.value); row[i] = c ? String(c) : ''; t.value = row[i]; }
       else row[i] = t.value;
       if (i === 1) syncTo(row, $('ch-' + r + '-2'));
@@ -1764,7 +2485,7 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
   // ---------- האוצר שלי ----------
   var otzFilter = '';
   function renderOtzar() {
-    E.BuildOtzarMy(new Date()).then(renderOtzarWith, function (e) { console.error(e); renderOtzarWith({ empty: true, rows: [] }); });
+    buildOtzarAll().then(renderOtzarWith, function (e) { console.error(e); renderOtzarWith({ empty: true, rows: [] }); });
   }
   function renderOtzarWith(res) {
     var demo = !!res.empty;
@@ -1816,12 +2537,13 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
   }
   // ---------- כלים ----------
   function renderTools() {
-    var S = E.getState();
+    var S = PS();
     var mode = store.mode === 'db' ? 'בחשבון שלך (נשמר אוטומטית, זמין מכל מכשיר)' : store.mode === 'local' ? 'בדפדפן הזה בלבד' : 'אין אחסון זמין';
     var h = '<h2>כלים וגיבוי</h2><p class="lead">ייבוא דפים מאקסל או PDF, גיבוי ושחזור, ופעולות תחזוקה.</p>';
     if (store.mode !== 'db') h += '<p class="notice" style="margin-bottom:12px">הנתונים נשמרים ' + mode + '. כדאי לייצא גיבוי מדי פעם.</p>';
     h += '<div class="cards">';
     h += '<div class="card"><h3>ייבוא דפים מקובץ</h3><p>קובץ אקסל, CSV או PDF עם עמודת תאריך ועמודת דף. התאריך יכול להיות לועזי (15/11/2026) או עברי (ט"ו כסלו תשפ"ז). הדף יכול להיות דף אחד (ברכות ב) או טווח (ברכות ב-ה). לפני הייבוא מוצגת טבלה לבדיקה: אפשר לתקן תאריך, מסכת ודף, ולבחור לכל שורה דף חדש, חזרה חודשית, חזרה רבעונית או חזרה שנתית. דפים שכבר רשומים לא נדרסים. קובץ PDF סרוק (תמונה) אי אפשר לקרוא.</p><div class="row"><button class="btn primary" id="tImport">בחירת קובץ</button></div></div>';
+    if (store.mode !== 'db') h += tracksCard();
     h += '<div class="card"><h3>גיבוי ושחזור</h3><p>שמירת כל הנתונים לקובץ גיבוי, או שחזור מקובץ גיבוי קודם.</p><div class="row"><button class="btn" id="tExport">ייצוא גיבוי</button><button class="btn" id="tRestore">שחזור מגיבוי</button></div></div>';
     h += '<div class="card"><h3>נרמול כל הדפים</h3><p>פעולה זו תנרמל את כל הדפים הקיימים בעמודות "דף חדש", הסיכומים, השימורים והחזרות לפורמט אחיד עם גרשיים (למשל ברכות י"ב). מומלץ לייצא גיבוי לפני ההרצה.</p><div class="row"><button class="btn" id="tNorm">הרצת נרמול</button></div></div>';
     h += '<div class="card"><h3>חישוב מחדש של השימור השבועי</h3><p>מחשב מחדש את עמודת "שימור שבועי/דו שבועי" בכל השבועות, לפי הסיכום השבועי והדו שבועי.</p><div class="row"><button class="btn" id="tRepair">חישוב מחדש</button></div></div>';
@@ -1835,6 +2557,7 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
     h += '</div>';
     $('toolsPad').innerHTML = h;
     $('tImport').onclick = function () { $('fileXlsm').click(); };
+    if ($('tFrame')) bindTracksCard();
     $('tExport').onclick = exportJson;
     $('tRestore').onclick = function () { $('fileJson').click(); };
     $('tNorm').onclick = function () {
@@ -1852,10 +2575,10 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
       });
     };
     $('tRepair').onclick = function () { E.RepairWeeklyShimur().then(function (n) { scheduleSave(); refreshAll(); showModal({ text: n ? 'עודכנו ' + n + ' שבועות.' : 'השימור כבר מעודכן בכל השבועות.' }); }); };
-    var cl = $('tClearLog'); if (cl) cl.onclick = function () { E.getState().log = []; scheduleSave(); renderTools(); };
+    var cl = $('tClearLog'); if (cl) cl.onclick = function () { PS().log = []; scheduleSave(); renderTools(); };
   }
   async function exportJson() {
-    var data = JSON.stringify({ app: 'mea-zmanim', v: 1, exported: new Date().toISOString(), meta: metaDoc(), blocks: allBlocks().map(blockDoc) });
+    var data = JSON.stringify({ app: 'mea-zmanim', v: 1, exported: new Date().toISOString(), meta: metaDoc(), blocks: allBlocks().map(function (b) { return blockDoc(b); }), tracks: trPayloads() });
     var name = 'מזומני-גיבוי-' + new Date().toISOString().slice(0, 10) + '.json';
     if (!E.isTauri()) {
       var dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null;
@@ -1878,8 +2601,11 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
       showModal({ title: 'הגיבוי נשמר', text: 'קובץ הגיבוי נשמר בתיקיית "הורדות":\n' + path + '\n\nכדי לשחזר במחשב אחר או בדיסק און קי: "שחזור מגיבוי" ובחירת הקובץ הזה.' });
     } catch (e) { showModal({ kind: 'err', text: 'שמירת הגיבוי נכשלה: ' + (e && e.message || e) }); }
   }
-  async function replaceState(s, label) {
-    await E.setState(s); E.takeDirty();
+  async function replaceState(s, label, j) {
+    TR.list = [{ id: 'me', name: 'מסלול אישי', kind: 'personal', color: '#2f6db3' }]; TR.states = {}; TR.proj = {};
+    if (j) { trFromMeta(j.meta); trLoadParts(j.tracks || {}); }
+    TR.states.me = s; TR.active = 'me'; TR.view = trVisible()[0] ? trVisible()[0].id : 'me'; if (TR.view !== 'me') trOf('me').hidden = false, TR.view = 'me';
+    await E.setState(s); E.takeDirty(); E.resetProj();
     await E.MainGate(new Date());
     scheduleSave(true); refreshAll(); flushMsgs();
     showModal({ text: label });
@@ -1917,7 +2643,7 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
         var j = JSON.parse(t);
         if (!j || j.app !== 'mea-zmanim') throw new Error('זה לא קובץ גיבוי של מְזֻמָּנַי');
         confirmBox('שחזור מגיבוי', 'הנתונים הקיימים יוחלפו בגיבוי מתאריך ' + String(j.exported || '').slice(0, 10) + '.\nלהמשיך?', 'שחזור', function () {
-          replaceState(stateFromParts(j.meta, j.blocks || []), 'הגיבוי שוחזר בהצלחה.');
+          replaceState(stateFromParts(j.meta, j.blocks || []), 'הגיבוי שוחזר בהצלחה.', j);
         });
       }).catch(function (err) { showModal({ kind: 'err', title: 'השחזור נכשל', text: String(err && err.message || err) }); });
     });
@@ -1990,7 +2716,7 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
   function refreshAll() {
     todayRow = E.rowOfDate(new Date());
     renderToday(); renderRows(true); if (selRow) renderDrawer(); if (VIEW === 'phone') renderPhone();
-    $('emptyNote').hidden = !!viewing || Object.keys(E.getState().cells.C).length > 0 || lsGet('mz-emptyDismissed') === '1';
+    $('emptyNote').hidden = !!viewing || TR.view !== 'me' || Object.keys(PS().cells.C).length > 0 || lsGet('mz-emptyDismissed') === '1';
     if (current !== 'main') showTab(current);
   }
   function hourly() {
@@ -2008,15 +2734,17 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
       try { await E.webLoad(); }
       catch (e) { console.error(e); $('loading').innerHTML = '<b>מְזֻמָּנַי</b><span>טעינת המנוע נכשלה: ' + esc(e && e.message || e) + '</span>'; return; }
     }
-    await initStore();
+    try { await initStore(); }
+    catch (e) { console.error(e); $('loading').innerHTML = '<b>מְזֻמָּנַי</b><span>' + esc(e && e.message || e) + '</span>'; return; }
     var s = null;
     try { s = await loadState(); }
     catch (e) {
       console.error(e); setStatus('error', 'טעינת הנתונים נכשלה');
-      if (store.mode === 'tauri') { $('loading').innerHTML = '<b>מְזֻמָּנַי</b><span>טעינת הנתונים נכשלה: ' + esc(e && e.message || e) + '</span>'; return; }
+      if (store.mode === 'tauri' || store.mode === 'cloud') { $('loading').innerHTML = '<b>מְזֻמָּנַי</b><span>טעינת הנתונים נכשלה: ' + esc(e && e.message || e) + '</span>'; return; }
     }
     var fresh = !s;
     if (!s) s = E.emptyState();
+    TR.states.me = s; trLoadParts(TR.loaded); TR.loaded = {};
     try { await E.setState(s); }
     catch (e) { console.error(e); $('loading').innerHTML = '<b>מְזֻמָּנַי</b><span>טעינת המנוע נכשלה: ' + esc(e && e.message || e) + '</span>'; return; }
     if (fresh) await E.initSys(new Date());
@@ -2036,7 +2764,22 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
     $('emptyNote').hidden = Object.keys(s.cells.C).length > 0 || lsGet('mz-emptyDismissed') === '1';
     $('emptyImport').onclick = function () { $('fileXlsm').click(); };
     $('emptyClose').onclick = function () { $('emptyNote').hidden = true; lsSet('mz-emptyDismissed', '1'); };
-    setStatus(store.mode === 'none' ? 'error' : 'saved', store.mode === 'db' ? 'מסונכרן' : store.mode === 'local' ? 'נשמר בדפדפן זה' : store.mode === 'tauri' ? 'נשמר (מוצפן)' : 'אין אחסון');
+    setStatus(store.mode === 'none' ? 'error' : 'saved', store.mode === 'db' ? 'מסונכרן' : store.mode === 'cloud' ? 'נשמר בענן' : store.mode === 'local' ? 'נשמר בדפדפן זה' : store.mode === 'tauri' ? 'נשמר (מוצפן)' : 'אין אחסון');
+    if (store.mode === 'cloud') {
+      var acct = document.createElement('div'); acct.className = 'acct';
+      acct.innerHTML = '<span>' + esc(store.me && store.me.name || '') + '</span>' + (store.me && store.me.admin ? '<a class="btn" href="/admin">ניהול</a>' : '') + '<button type="button" class="btn" id="logoutBtn">יציאה</button>';
+      $('status').after(acct);
+      $('logoutBtn').onclick = function () { fetch('/api/logout', { method: 'POST', credentials: 'same-origin', headers: { 'X-MZ': '1' } }).finally(function () { location.href = '/login'; }); };
+      // בדיקה תקופתית: חשבון שנחסם, שפג תוקפו או שהסיסמה שלו אופסה — יוצא מיד
+      var checkAcct = function () {
+        fetch('/api/me', { credentials: 'same-origin' }).then(function (r) {
+          if (r.status === 401) { location.href = '/login'; return null; }
+          return r.ok ? r.json() : null;
+        }).then(function (me) { if (me && (me.problem || me.must_change)) location.href = '/login'; }).catch(function () { });
+      };
+      setInterval(checkAcct, 30000);
+      document.addEventListener('visibilitychange', function () { if (!document.hidden) checkAcct(); });
+    }
     if ((await E.MainGate(new Date())) || flagNew) scheduleSave(true);
     if (bootFixed) showModal({ text: 'תוקן השימור השבועי/דו שבועי ב-' + bootFixed + ' שבועות שבהם נשמרו ערכים שגויים.' });
     flushMsgs();
@@ -2044,6 +2787,10 @@ ENGINE.setExtras({"2":"פרשת האזינו","9":"יום כיפור","16":"סו
     if (store.owner && store.mode === 'db') $('tab-users').hidden = false;
     $('viewBack').onclick = backToMine;
     registerMember(true);
+    var tv = lsGet('mz-trview') || 'me';
+    if (tv !== 'all' && (!trOf(tv) || trOf(tv).hidden)) tv = trVisible()[0] ? trVisible()[0].id : 'me';
+    if (tv === 'all' && !trMulti()) tv = trVisible()[0].id;
+    if (tv !== 'me') await setView(tv);
     var t = lsGet('mz-tab'); if (t && t !== 'main' && t !== 'users' && $('p-' + t)) showTab(t);
     setInterval(hourly, 3600000);
     document.addEventListener('visibilitychange', function () { if (!document.hidden) hourly(); });
